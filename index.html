@@ -59,8 +59,8 @@
                             ${select_difficult.times} 次
                         </div>
                         <div v-if="select_difficult!=''">
-                            總力量結晶價格 : ${moneyFormat((select_difficult.money
-                            / selected_player) * select_difficult.times)}
+                            單筆力量結晶價格 : ${moneyFormat(select_difficult.money
+                            / selected_player)}
                         </div>
                         <button class="btn btn-primary btn-lg btn-block"
                             @click="addCanKill"
@@ -151,7 +151,7 @@
                                             <th scope="col" class="text-center">難度</th>
                                             <th scope="col" class="text-center">擊殺次數</th>
                                             <th scope="col" class="text-center">隊伍人數</th>
-                                            <th scope="col" class="text-center">預估收益</th>
+                                            <th scope="col" class="text-center">預估收益/次</th>
                                             <th scope="col" class="text-center">功能</th>
                                         </tr>
                                     </thead>
@@ -177,7 +177,7 @@
                                                     v-on:change="updateCanKill">
                                             </td>
                                             <td class="text-center">
-                                                ${moneyFormat((item.money/item.player)*item.times)}
+                                                ${moneyFormat(item.money/item.player)}
                                             </td>
                                             <td class="text-center">
                                                 <button type="button" class="btn
@@ -219,7 +219,7 @@
                                             <th scope="col" class="text-center">難度</th>
                                             <th scope="col" class="text-center">擊殺次數</th>
                                             <th scope="col" class="text-center">隊伍人數</th>
-                                            <th scope="col" class="text-center">預估收益</th>
+                                            <th scope="col" class="text-center">預估收益/次</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -238,7 +238,7 @@
                                                 ${item.player}
                                             </td>
                                             <td class="text-center">
-                                                ${moneyFormat((item.money/item.player)*item.times)}
+                                                ${moneyFormat(item.money/item.player)}
                                             </td>
                                         </tr>
                                     </tbody>
@@ -272,7 +272,7 @@
                                             <th scope="col" class="text-center">難度</th>
                                             <th scope="col" class="text-center">擊殺次數</th>
                                             <th scope="col" class="text-center">隊伍人數</th>
-                                            <th scope="col" class="text-center">預估收益</th>
+                                            <th scope="col" class="text-center">預估收益/次</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -291,7 +291,7 @@
                                                 ${item.player}
                                             </td>
                                             <td class="text-center">
-                                                ${moneyFormat((item.money/item.player)*item.times)}
+                                                ${moneyFormat(item.money/item.player)}
                                             </td>
                                         </tr>
                                     </tbody>
@@ -325,7 +325,7 @@
                                             <th scope="col" class="text-center">難度</th>
                                             <th scope="col" class="text-center">擊殺次數</th>
                                             <th scope="col" class="text-center">隊伍人數</th>
-                                            <th scope="col" class="text-center">預估收益</th>
+                                            <th scope="col" class="text-center">預估收益/次</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -344,7 +344,7 @@
                                                 ${item.player}
                                             </td>
                                             <td class="text-center">
-                                                ${moneyFormat((item.money/item.player)*item.times)}
+                                                ${moneyFormat(item.money/item.player)}
                                             </td>
                                         </tr>
                                     </tbody>
@@ -381,7 +381,7 @@
                                             <th scope="col" class="text-center">難度</th>
                                             <th scope="col" class="text-center">擊殺次數</th>
                                             <th scope="col" class="text-center">隊伍人數</th>
-                                            <th scope="col" class="text-center">預估收益</th>
+                                            <th scope="col" class="text-center">預估收益/次</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -400,7 +400,7 @@
                                                 ${item.player}
                                             </td>
                                             <td class="text-center">
-                                                ${moneyFormat((item.money/item.player)*item.times)}
+                                                ${moneyFormat(item.money/item.player)}
                                             </td>
                                         </tr>
                                     </tbody>
@@ -436,7 +436,7 @@
                                             <th scope="col" class="text-center">難度</th>
                                             <th scope="col" class="text-center">擊殺次數</th>
                                             <th scope="col" class="text-center">隊伍人數</th>
-                                            <th scope="col" class="text-center">預估收益</th>
+                                            <th scope="col" class="text-center">預估收益/次</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -455,7 +455,7 @@
                                                 ${item.player}
                                             </td>
                                             <td class="text-center">
-                                                ${moneyFormat((item.money/item.player)*item.times)}
+                                                ${moneyFormat(item.money/item.player)}
                                             </td>
                                         </tr>
                                     </tbody>

@@ -200,8 +200,8 @@ $(document).ready(function () {
                 return true
             },
             sortKillList(a, b) {
-                var a_expected = (a.money / a.player) * a.times
-                var b_expected = (b.money / b.player) * b.times
+                var a_expected = a.money / a.player
+                var b_expected = b.money / b.player
                 return b_expected - a_expected
             },
             updateCanKill(event) {
