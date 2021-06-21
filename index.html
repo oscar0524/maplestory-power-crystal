@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet"
+            href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+            integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+            crossorigin="anonymous">
+        <link rel="stylesheet"
+            href="https://unpkg.com/bootstrap-table@1.18.3/dist/bootstrap-table.min.css">
+        <!-- icon -->
+        <link rel="stylesheet"
+            href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" />
+        <title>楓之谷力量結晶排程工具</title>
+    </head>
+    <body>
+
+        <div id="app">
+            <nav class="navbar navbar-light bg-light">
+                <div class="container">
+                    <span class="navbar-brand mb-0 h1">楓之谷力量結晶排程工具</span>
+                </div>
+
+            </nav>
+            <div class="container">
+                <h1>BOSS 設定</h1>
+                <div class="card">
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label>BOSS</label>
+                            <select class="form-control"
+                                v-model="selected_boss">
+                                <option v-for="item in getFilterData()">${item.name}</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>難度</label>
+                            <select class="form-control"
+                                v-model="selected_difficult">
+                                <option v-for="item in getFilterDifficult()">
+                                    ${str_difficult(item.difficult)}</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>人數</label>
+                            <input type="number"
+                                v-model="selected_player"
+                                class="form-control"
+                                min=1
+                                max=6
+                                placeholder="人數">
+                        </div>
+                        <div v-if="select_difficult!=''">
+                            每 ${str_limit(select_difficult.limit)} 只能打
+                            ${select_difficult.times} 次
+                        </div>
+                        <div v-if="select_difficult!=''">
+                            總力量結晶價格 : ${moneyFormat((select_difficult.money
+                            / selected_player) * select_difficult.times)}
+                        </div>
+                        <button class="btn btn-primary btn-lg btn-block"
+                            @click="addCanKill"
+                            :disabled="getFilterData().length==0">新增目標BOSS</button>
+                    </div>
+                </div>
+
+                <h1 class="mt-3">紀錄</h1>
+                <div class="form-group">
+                    <input
+                        class="form-control"
+                        placeholder="設定名稱" v-model="setting.name"></div>
+                <div class="row">
+                    <div class="col">
+                        <div class="form-group">
+                            <select class="form-control"
+                                v-model="selected_setting_name">
+                                <option v-for="item in setting_data">${item.name}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <div class="btn-group" role="group" aria-label="Basic
+                            example">
+                            <button type="button" class="btn btn-info"
+                                @click="loadSetting"
+                                :disabled="selected_setting_name==''">
+                                讀取設定
+                            </button>
+                            <button type="button" class="btn btn-primary"
+                                @click="saveSetting"
+                                :disabled="setting.name==''">
+                                儲存設定
+                            </button>
+                            <button type="button" class="btn btn-danger"
+                                @click="removeSetting"
+                                :disabled="selected_setting_name==''">
+                                移除設定
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="form-group mt-5">
+                    <h1>目標水晶數量</h1>
+                    <input type="number"
+                        v-model="max_power_crystal"
+                        class="form-control"
+                        min=1
+                        max=60>
+                </div>
+
+                <div class="row">
+                    <div class="col">
+                        <h1>每週可賣水晶 ${count_power_crystal} 顆</h1>
+                    </div>
+                    <div class="col-2">
+                        <button class="btn btn-danger btn-block"
+                            @click="resetCanKill">全部清除</button>
+                    </div>
+                </div>
+
+                <div id="accordion">
+                    <div class="card">
+                        <div class="card-header"
+                            id="headingCanKillBoss">
+                            <h5 class="mb-0">
+                                <button class="btn btn-light btn-lg btn-block"
+                                    data-toggle="collapse"
+                                    data-target="#collapseCanKillBoss"
+                                    aria-expanded="true"
+                                    aria-controls="collapseOne">
+                                    目標 BOSS
+                                </button>
+                            </h5>
+                        </div>
+                        <div id="collapseCanKillBoss"
+                            class="collapse show"
+                            aria-labelledby="headingCanKillBoss"
+                            data-parent="#accordion">
+                            <div class="card-body">
+                                <table class="table
+                                    table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col" class="text-center">名稱</th>
+                                            <th scope="col" class="text-center">難度</th>
+                                            <th scope="col" class="text-center">擊殺次數</th>
+                                            <th scope="col" class="text-center">隊伍人數</th>
+                                            <th scope="col" class="text-center">預估收益</th>
+                                            <th scope="col" class="text-center">功能</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="(item,index) in can_kill">
+                                            <th scope="row" class="text-center">
+                                                ${item.name}
+                                            </th>
+                                            <td class="text-center">
+                                                ${str_difficult(item.difficult)}
+                                            </td>
+                                            <td class="text-center">
+                                                ${item.times}
+                                            </td>
+                                            <td class="text-center">
+                                                <input type="number"
+                                                    v-model="item.player"
+                                                    class="form-control
+                                                    text-center"
+                                                    min=1
+                                                    max=6
+                                                    placeholder="人數"
+                                                    v-on:change="updateCanKill">
+                                            </td>
+                                            <td class="text-center">
+                                                ${moneyFormat((item.money/item.player)*item.times)}
+                                            </td>
+                                            <td class="text-center">
+                                                <button type="button" class="btn
+                                                    btn-danger"
+                                                    @click="deleteCanKillIndex(index)">
+                                                    <i class="far fa-trash-alt">
+                                                    </i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card" v-if="ans_month_group.length>0">
+                        <div class="card-header"
+                            id="headingmonthKillBoss">
+                            <h5 class="mb-0">
+                                <button class="btn btn-light btn-lg btn-block"
+                                    data-toggle="collapse"
+                                    data-target="#collapsemonthKillBoss"
+                                    aria-expanded="true"
+                                    aria-controls="collapseOne">
+                                    建議每月一次 ( 共
+                                    ${count_crystal(ans_month_group)} 隻 )
+                                </button>
+                            </h5>
+                        </div>
+                        <div id="collapsemonthKillBoss"
+                            class="collapse show"
+                            aria-labelledby="headingmonthKillBoss"
+                            data-parent="#accordion">
+                            <div class="card-body">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col" class="text-center">名稱</th>
+                                            <th scope="col" class="text-center">難度</th>
+                                            <th scope="col" class="text-center">擊殺次數</th>
+                                            <th scope="col" class="text-center">隊伍人數</th>
+                                            <th scope="col" class="text-center">預估收益</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="item in ans_month_group">
+
+                                            <th scope="row" class="text-center">
+                                                ${item.name}
+                                            </th>
+                                            <td class="text-center">
+                                                ${str_difficult(item.difficult)}
+                                            </td>
+                                            <td class="text-center">
+                                                ${item.times}
+                                            </td>
+                                            <td class="text-center">
+                                                ${item.player}
+                                            </td>
+                                            <td class="text-center">
+                                                ${moneyFormat((item.money/item.player)*item.times)}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card" v-if="ans_week_group.length>0">
+                        <div class="card-header"
+                            id="headingWeekKillBoss">
+                            <h5 class="mb-0">
+                                <button class="btn btn-light btn-lg btn-block"
+                                    data-toggle="collapse"
+                                    data-target="#collapseWeekKillBoss"
+                                    aria-expanded="true"
+                                    aria-controls="collapseOne">
+                                    建議每週一次 ( 共
+                                    ${count_crystal(ans_week_group)} 隻 )
+                                </button>
+                            </h5>
+                        </div>
+                        <div id="collapseWeekKillBoss"
+                            class="collapse show"
+                            aria-labelledby="headingWeekKillBoss"
+                            data-parent="#accordion">
+                            <div class="card-body">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col" class="text-center">名稱</th>
+                                            <th scope="col" class="text-center">難度</th>
+                                            <th scope="col" class="text-center">擊殺次數</th>
+                                            <th scope="col" class="text-center">隊伍人數</th>
+                                            <th scope="col" class="text-center">預估收益</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="item in ans_week_group">
+
+                                            <th scope="row" class="text-center">
+                                                ${item.name}
+                                            </th>
+                                            <td class="text-center">
+                                                ${str_difficult(item.difficult)}
+                                            </td>
+                                            <td class="text-center">
+                                                ${item.times}
+                                            </td>
+                                            <td class="text-center">
+                                                ${item.player}
+                                            </td>
+                                            <td class="text-center">
+                                                ${moneyFormat((item.money/item.player)*item.times)}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card" v-if="ans_day_group.length>0">
+                        <div class="card-header"
+                            id="headingDayKillBoss">
+                            <h5 class="mb-0">
+                                <button class="btn btn-light btn-lg btn-block"
+                                    data-toggle="collapse"
+                                    data-target="#collapseDayKillBoss"
+                                    aria-expanded="true"
+                                    aria-controls="collapseOne">
+                                    建議每天一次 ( 共
+                                    ${count_crystal(ans_day_group)} 隻 )
+                                </button>
+                            </h5>
+                        </div>
+                        <div id="collapseDayKillBoss"
+                            class="collapse show"
+                            aria-labelledby="headingDayKillBoss"
+                            data-parent="#accordion">
+                            <div class="card-body">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col" class="text-center">名稱</th>
+                                            <th scope="col" class="text-center">難度</th>
+                                            <th scope="col" class="text-center">擊殺次數</th>
+                                            <th scope="col" class="text-center">隊伍人數</th>
+                                            <th scope="col" class="text-center">預估收益</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="item in ans_day_group">
+
+                                            <th scope="row" class="text-center">
+                                                ${item.name}
+                                            </th>
+                                            <td class="text-center">
+                                                ${str_difficult(item.difficult)}
+                                            </td>
+                                            <td class="text-center">
+                                                ${item.times}
+                                            </td>
+                                            <td class="text-center">
+                                                ${item.player}
+                                            </td>
+                                            <td class="text-center">
+                                                ${moneyFormat((item.money/item.player)*item.times)}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                        </div>
+
+                    </div>
+                    <div class="card" v-if="ans_bones_group.length>0">
+                        <div class="card-header"
+                            id="headingBonesKillBoss">
+                            <h5 class="mb-0">
+                                <button class="btn btn-light btn-lg btn-block"
+                                    data-toggle="collapse"
+                                    data-target="#collapseBonesKillBoss"
+                                    aria-expanded="true"
+                                    aria-controls="collapseOne">
+                                    建議找天一次 ( 共
+                                    ${count_crystal(ans_bones_group)} 隻 )
+                                    )
+                                </button>
+                            </h5>
+                        </div>
+                        <div id="collapseBonesKillBoss"
+                            class="collapse show"
+                            aria-labelledby="headingBonesKillBoss"
+                            data-parent="#accordion">
+                            <div class="card-body">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col" class="text-center">名稱</th>
+                                            <th scope="col" class="text-center">難度</th>
+                                            <th scope="col" class="text-center">擊殺次數</th>
+                                            <th scope="col" class="text-center">隊伍人數</th>
+                                            <th scope="col" class="text-center">預估收益</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="item in ans_bones_group">
+
+                                            <th scope="row" class="text-center">
+                                                ${item.name}
+                                            </th>
+                                            <td class="text-center">
+                                                ${str_difficult(item.difficult)}
+                                            </td>
+                                            <td class="text-center">
+                                                ${item.times}
+                                            </td>
+                                            <td class="text-center">
+                                                ${item.player}
+                                            </td>
+                                            <td class="text-center">
+                                                ${moneyFormat((item.money/item.player)*item.times)}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="card" v-if="ans_other_group.length>0">
+                        <div class="card-header"
+                            id="headingOtherKillBoss">
+                            <h5 class="mb-0">
+                                <button class="btn btn-light btn-lg btn-block"
+                                    data-toggle="collapse"
+                                    data-target="#collapseOtherKillBoss"
+                                    aria-expanded="true"
+                                    aria-controls="collapseOne">
+                                    未進入排程 ( 共
+                                    ${count_crystal(ans_other_group)} 隻 )
+                                    )
+                                </button>
+                            </h5>
+                        </div>
+                        <div id="collapseOtherKillBoss"
+                            class="collapse show"
+                            aria-labelledby="headingOtherKillBoss"
+                            data-parent="#accordion">
+                            <div class="card-body">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col" class="text-center">名稱</th>
+                                            <th scope="col" class="text-center">難度</th>
+                                            <th scope="col" class="text-center">擊殺次數</th>
+                                            <th scope="col" class="text-center">隊伍人數</th>
+                                            <th scope="col" class="text-center">預估收益</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="item in ans_other_group">
+
+                                            <th scope="row" class="text-center">
+                                                ${item.name}
+                                            </th>
+                                            <td class="text-center">
+                                                ${str_difficult(item.difficult)}
+                                            </td>
+                                            <td class="text-center">
+                                                ${item.times}
+                                            </td>
+                                            <td class="text-center">
+                                                ${item.player}
+                                            </td>
+                                            <td class="text-center">
+                                                ${moneyFormat((item.money/item.player)*item.times)}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+
+        <!-- Jquery Bootstrap -->
+        <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+        <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+        <script
+            src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+        <script
+            src="https://unpkg.com/bootstrap-table@1.18.3/dist/bootstrap-table.min.js"></script>
+        <!-- Vue.js -->
+        <script src="https://unpkg.com/vue@next"></script>
+        <!-- sweetalert2 -->
+        <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script src="main.js"></script>
+    </body>
+</html>
